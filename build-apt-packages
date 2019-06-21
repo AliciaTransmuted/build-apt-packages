@@ -161,8 +161,8 @@ if [ "${errors_found}" = "Y" ];then
    echo "${log_heading_2}" >> "${apt_log}"
    echo "${log_heading_3}" >> "${err_log}"
    echo "${log_heading_1}" >> "${err_log}"
-   chown "${username}":"${username}" "${err_log}"
-   chmod 775 "${err_log}"
+   sudo chown "${username}":"${username}" "${err_log}"
+   sudo chmod 775 "${err_log}"
 else
    rm -f "${err_log}"
 fi
@@ -175,7 +175,7 @@ printf '%s\n' "${log_heading_3}"
 echo "${log_heading_1}" >> "${apt_log}"
 printf '%s\n' "${log_heading_1}"
 
-chown "${username}":"${username}" "${apt_log}"
-chmod 775 "${apt_log}"
+sudo chown "${username}":"${username}" "${apt_log}"
+sudo chmod 775 "${apt_log}"
 
 cd
