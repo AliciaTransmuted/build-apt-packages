@@ -1,0 +1,181 @@
+#!/bin/bash
+
+#-----------------------------------------------------------
+# build-apt-packages
+# version 1.0
+# Install a list of applications using apt-get
+# June 20, 2019
+# AliciaTransmuted
+# https://github.com/AliciaTransmuted/build-apt-packages
+# ----------------------------------------------------------
+# dependancies: grep
+
+###
+### Functions
+###
+
+show_usage (){
+
+printf "\n"
+printf "Usage: sudo sh $0 [options [parameters]]\n"
+printf "\n"
+printf "version 1.0\n"
+printf "\n"
+printf "Options:\n"
+printf " $color_on-i|--inputlist$color_off, list of apt packages to install (Default input file is ~/apt-packages) I.E. $color_on-i my-apt-packages$color_off\n"
+printf " $color_on-h|--help$color_off, Print help (this dialog) I.E. $color_on-h$color_off\n"
+printf "\n"
+printf "$0 installs a list of applications using apt-get \n"
+printf "   - summarises the apt installation process to the terminal\n"
+printf "   - captures errors, missing packages, and other exceptions to a dedicated error file\n"
+printf "\n"
+
+return 0
+}
+
+
+# ***** initialize variables
+
+cd
+
+username=$USER
+
+if [ -n "$SUDO_USER" ]; then
+   username=$SUDO_USER
+fi
+
+input_list="apt-packages"
+
+log_dir="logs"
+
+log_heading_1="................................................................................................................."
+log_heading_2="................................................................................................................."
+log_heading_3="J O B     H A S     C O M P L E T E D"
+log_heading_4="*****************************************************************************************************************"
+
+# ***** colours
+color_red="\e[91m"
+color_green="\e[92m"
+color_yellow="\e[93m"
+color_cyan="\e[96m"
+
+color_on="${color_green}"
+color_off="\e[0m"
+
+apt_count=0
+errors_found="N"
+
+while [ ! -z "$1" ]; do
+  case "$1" in
+     --inputlist|-i)
+         shift
+         if [ -n "$1" ]; then
+            input_list="$1"
+         fi
+         ;;
+     --help|-h)
+         show_usage
+         exit 1
+         ;;
+     *)
+        show_usage
+        exit 1
+        ;;
+  esac
+shift
+done
+
+# ***** initialize logs
+apt_log_dir="${log_dir}""/apt"
+apt_log_date=$(date '+%Y-%m-%d-%H-%M-%S')
+apt_log="${apt_log_dir}""/""${apt_log_date}""-apt.log"
+err_log="${apt_log_dir}""/""${apt_log_date}""-err.log"
+tmp_log="${apt_log_dir}""/""${apt_log_date}""-tmp.log"
+
+mkdir -p "${apt_log_dir}"
+
+echo "${log_heading_1}" > "${apt_log}"
+echo "${log_heading_1}" > "${err_log}"
+
+printf '%s\n' "${log_heading_1}"
+
+log_entry="Installing apt packages from text file 'home/""${username}""/""${input_list}""'"
+printf '%s\n' "${log_entry}"
+echo "${log_entry}" >> "${apt_log}"
+
+log_entry="Generating log file 'home/""${username}""/""${apt_log}""'"
+printf '%s\n' "${log_entry}"
+echo "${log_entry}" >> "${apt_log}"
+
+printf '%s\n' "${log_heading_2}"
+echo "${log_heading_2}" > "${apt_log}"
+
+
+
+while read -r line; do
+
+      apt_count=$(( apt_count + 1 ))
+      
+      search_arg1="Setting up ""$line"
+      search_arg2="$line"" is already the newest version"
+      
+      log_entry="Installing apt package ""${apt_count}"": ""${line}""   "
+      echo -n "\r${log_entry}"
+      echo "${log_entry}" >> "${apt_log}"
+
+      sudo apt-get -y install "$line" > "${tmp_log}"
+
+      if grep --quiet "${search_arg1}" "${tmp_log}"; then
+         log_entry="...""$line"" installed"
+         echo "${log_entry}"
+      elif grep --quiet "${search_arg2}" "${tmp_log}"; then
+         log_entry="...""$line"" is already the newest version"
+         echo "${log_entry}"
+      else
+         errors_found="Y"
+         log_entry="***** ERROR installing ""$line"", review ""$err_log"" *****"
+         printf '%s\n' "${log_entry}"
+         echo "${log_entry}" >> "${apt_log}"
+         echo "${log_entry}" >> "${apt_log}"
+         echo "${log_entry}" >> "${apt_log}"
+         log_entry="***** ERROR installing ""$line"" *****"
+         echo "${log_entry}" >> "${err_log}"
+         cat "${tmp_log}" >> "${err_log}"
+         echo "${log_heading_2}" >> "${err_log}"
+      fi
+      
+      cat "${tmp_log}" >> "${apt_log}"
+      echo "${log_heading_2}" >> "${apt_log}"
+      
+done < "${input_list}"
+
+
+
+rm -f "${tmp_log}"
+
+if [ "${errors_found}" = "Y" ];then
+   printf '%s\n' "${log_heading_2}"
+   log_entry="***** ERROR(S) found, review ""$err_log"" for details *****"
+   printf '%s\n' "${log_entry}"
+   echo "${log_entry}" >> "${apt_log}"
+   echo "${log_heading_2}" >> "${apt_log}"
+   echo "${log_heading_3}" >> "${err_log}"
+   echo "${log_heading_1}" >> "${err_log}"
+   chown "${username}":"${username}" "${err_log}"
+   chmod 775 "${err_log}"
+else
+   rm -f "${err_log}"
+fi
+
+printf '%s\n' "${log_heading_2}"
+
+echo "${log_heading_3}" >> "${apt_log}"
+printf '%s\n' "${log_heading_3}"
+
+echo "${log_heading_1}" >> "${apt_log}"
+printf '%s\n' "${log_heading_1}"
+
+chown "${username}":"${username}" "${apt_log}"
+chmod 775 "${apt_log}"
+
+cd
