@@ -1,4 +1,6 @@
+Screenshots of Terminal output
 ![Screenshot](https://i.imgur.com/6HMtHDA.png)
+![Screenshot](https://i.imgur.com/ppUlsfz.png)
 
 # build-apt-packages
 
