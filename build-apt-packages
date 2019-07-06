@@ -117,7 +117,7 @@ printf '%s\n' "${log_entry}"
 echo "${log_entry}" >> "${apt_log}"
 
 printf '%s\n' "${log_heading_2}"
-echo "${log_heading_2}" > "${apt_log}"
+echo "${log_heading_2}" >> "${apt_log}"
 
 
 
