@@ -126,7 +126,7 @@ while read -r line; do
       apt_count=$(( apt_count + 1 ))
       
       search_arg1="Setting up ""$line"
-      search_arg2="$line"" is already the newest version"
+      search_arg2=" is already the newest version"
       
       log_entry="Installing apt package ""${apt_count}"": ""${line}""   "
       printf '%s\r' "${log_entry}"
