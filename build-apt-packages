@@ -132,7 +132,7 @@ while read -r line; do
       printf '%s\r' "${log_entry}"
       echo "${log_entry}" >> "${apt_log}"
 
-      sudo apt-get -y install "$line" > "${tmp_log}"
+      sudo apt-get -y install "$line" > "${tmp_log}" 2>&1
 
       if grep --quiet "${search_arg1}" "${tmp_log}"; then
          log_entry="Installing apt package ""${apt_count}"": ""${line}""   ""...""$line"" installed"
